@@ -1,5 +1,12 @@
 ## pre-commit
 
+### 설정
+
+```shell
+git config --global init.templateDir ~/.git-template \
+&& pre-commit init-templatedir ~/.git-template -t pre-commit -t prepare-commit-msg
+```
+
 ### add-jira-issue-key-to-commit-msg
 
 - `<jiraProjectKey>`: MAF, MO 등 프로젝트를 구분하는 키
