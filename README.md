@@ -25,3 +25,7 @@ repos:
       - id: add-jira-issue-key-to-commit-msg
         args: ["--key", "MAF"]
 ```
+
+### commit convention
+
+- https://www.conventionalcommits.org/ko/v1.0.0/
