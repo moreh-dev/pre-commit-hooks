@@ -7,6 +7,10 @@ git config --global init.templateDir ~/.git-template \
 && pre-commit init-templatedir ~/.git-template -t pre-commit -t prepare-commit-msg
 ```
 
+위 명령어를 실행하면 레포지토리를 생성하거나 클론할 때 자동으로 pre-commit 훅이 등록됩니다.
+
+이미 레포지토리를 생성하거나 클론한 상태라면 해당 레포지토리에서 `pre-commit install` 명령어를 실행하여 훅을 등록할 수 있습니다.
+
 ### add-jira-issue-key-to-commit-msg
 
 - `<jiraProjectKey>`: MAF, MO 등 프로젝트를 구분하는 키
