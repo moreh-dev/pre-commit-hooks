@@ -15,7 +15,11 @@ while true; do
         shift
         ;;
     -k | --key)
-        PROJECT_KEY=$2
+        if [ -z "$PROJECT_KEYS" ]; then
+            PROJECT_KEYS="$2"
+        else
+            PROJECT_KEYS="$PROJECT_KEYS $2"
+        fi
         shift 2
         ;;
     --)
@@ -29,13 +33,19 @@ while true; do
 done
 
 BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "unknown")
-ISSUE_KEY=$(echo "$BRANCH_NAME" | grep -oE "^$PROJECT_KEY-[0-9]+" || echo "")
+
+for PROJECT_KEY in $PROJECT_KEYS; do
+    ISSUE_KEY=$(echo "$BRANCH_NAME" | grep -oE "^$PROJECT_KEY-[0-9]+" || echo "")
+    if [ -n "$ISSUE_KEY" ]; then
+        break
+    fi
+done
 
 if [ -z "$ISSUE_KEY" ]; then
     exit 0
 fi
 
-TMP_MSG=$(cat $COMMIT_MSG_FILE)
+TMP_MSG=$(cat "$COMMIT_MSG_FILE")
 
 case "$TMP_MSG" in
 $ISSUE_KEY*)
@@ -43,4 +53,4 @@ $ISSUE_KEY*)
     ;;
 esac
 
-echo "$ISSUE_KEY: $TMP_MSG" >$COMMIT_MSG_FILE
+echo "$ISSUE_KEY: $TMP_MSG" >"$COMMIT_MSG_FILE"
