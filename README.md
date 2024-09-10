@@ -24,7 +24,7 @@ default_install_hook_types:
   - prepare-commit-msg
 repos:
   - repo: https://github.com/moreh-dev/pre-commit-hooks
-    rev: v0.2.0
+    rev: v0.3.0
     hooks:
       - id: add-jira-issue-key-to-commit-msg
         args: ["--key", "MAF", "--key", "MV"]
