@@ -2,7 +2,12 @@
 
 set -e
 
-options=$(getopt -o k: -l key: -n "$(basename "$0")" -- "$@")
+if ! getopt -T >/dev/null; then
+    options=$(getopt -o k: -l key: -n "$(basename "$0")" -- "$@")
+else
+    eval set -- "$(echo "$@" | sed 's/--key/-k/g')"
+    options=$(getopt k: "$@")
+fi
 
 eval set -- "$options"
 
