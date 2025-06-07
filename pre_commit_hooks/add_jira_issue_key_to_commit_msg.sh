@@ -3,10 +3,15 @@
 set -e
 
 if ! getopt -T >/dev/null; then
-    options=$(getopt -o k: -l key: -n "$(basename "$0")" -- "$@")
+    options=$(getopt \
+        -o k:n \
+        -l key:,enable-no-issue \
+        -n "$(basename "$0")" \
+        -- "$@")
 else
     eval set -- "$(echo "$@" | sed 's/--key/-k/g')"
-    options=$(getopt k: "$@")
+    eval set -- "$(echo "$@" | sed 's/--enable-no-issue/-n/g')"
+    options=$(getopt k:n "$@")
 fi
 
 eval set -- "$options"
@@ -20,6 +25,10 @@ while true; do
             PROJECT_KEYS="$PROJECT_KEYS $2"
         fi
         shift 2
+        ;;
+    -n | --enable-no-issue)
+        ENABLE_NO_ISSUE=true
+        shift
         ;;
     --)
         COMMIT_MSG_FILE=$2
@@ -42,7 +51,11 @@ for PROJECT_KEY in $PROJECT_KEYS; do
 done
 
 if [ -z "$ISSUE_KEY" ]; then
-    exit 0
+    if [ "$ENABLE_NO_ISSUE" = true ]; then
+        ISSUE_KEY="NO-ISSUE"
+    else
+        exit 0
+    fi
 fi
 
 TMP_MSG=$(cat "$COMMIT_MSG_FILE")

@@ -2,8 +2,15 @@ default_install_hook_types:
   - pre-commit
   - prepare-commit-msg
 repos:
-  - repo: https://github.com/moreh-dev/pre-commit-hooks
-    rev: v0.3.0
+  - repo: local
     hooks:
       - id: add-jira-issue-key-to-commit-msg
-        args: ["--key", "MAF"]
+        name: JIRA issue key로 시작하는 브랜치의 커밋에 prefix를 추가합니다.
+        language: script
+        entry: pre_commit_hooks/add_jira_issue_key_to_commit_msg.sh
+        args:
+          - --key
+          - MAF
+          - --enable-no-issue
+        stages:
+          - prepare-commit-msg
