@@ -42,28 +42,32 @@ while true; do
 done
 
 BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "unknown")
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
 for PROJECT_KEY in $PROJECT_KEYS; do
     ISSUE_KEY=$(echo "$BRANCH_NAME" | grep -oE "^$PROJECT_KEY-[0-9]+" || echo "")
+
     if [ -n "$ISSUE_KEY" ]; then
+        # Check if the issue key is already in the commit message
+        case "$COMMIT_MSG" in
+        $ISSUE_KEY*)
+            exit 0
+            ;;
+        esac
+
         break
     fi
 done
 
 if [ -z "$ISSUE_KEY" ]; then
-    if [ "$ENABLE_NO_ISSUE" = true ]; then
+    # If no issue key was found in the branch name, check the commit message
+    if echo "$COMMIT_MSG" | grep -oE "^$PROJECT_KEY-[0-9]+" >/dev/null; then
+        exit 0
+    elif [ "$ENABLE_NO_ISSUE" = true ]; then
         ISSUE_KEY="NO-ISSUE"
     else
         exit 0
     fi
 fi
 
-TMP_MSG=$(cat "$COMMIT_MSG_FILE")
-
-case "$TMP_MSG" in
-$ISSUE_KEY*)
-    exit 0
-    ;;
-esac
-
-echo "$ISSUE_KEY: $TMP_MSG" >"$COMMIT_MSG_FILE"
+echo "$ISSUE_KEY: $COMMIT_MSG" >"$COMMIT_MSG_FILE"
