@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 # Path to the hook script relative to this test file
-# tests/test_hook.py -> ../pre_commit_hooks/add_jira_issue_key_to_commit_msg.sh
 HOOK_SCRIPT = (
     Path(__file__).parents[1]
     / "pre_commit_hooks"
