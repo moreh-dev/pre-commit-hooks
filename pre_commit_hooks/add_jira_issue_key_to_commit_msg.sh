@@ -48,26 +48,23 @@ for PROJECT_KEY in $PROJECT_KEYS; do
     ISSUE_KEY=$(echo "$BRANCH_NAME" | grep -oE "^$PROJECT_KEY-[0-9]+" || echo "")
 
     if [ -n "$ISSUE_KEY" ]; then
-        # Check if the issue key is already in the commit message
-        case "$COMMIT_MSG" in
-        $ISSUE_KEY*)
-            exit 0
-            ;;
-        esac
-
         break
     fi
 done
 
+# Prepare regex for expected keys (Project Keys + NO-ISSUE)
+PROJECT_KEYS_REGEX=$(echo "$PROJECT_KEYS" | sed 's/ /|/g')
+
 if [ -z "$ISSUE_KEY" ]; then
-    # If no issue key was found in the branch name, check the commit message
-    if echo "$COMMIT_MSG" | grep -oE "^$PROJECT_KEY-[0-9]+" >/dev/null; then
-        exit 0
-    elif [ "$ENABLE_NO_ISSUE" = true ]; then
+    if [ "$ENABLE_NO_ISSUE" = true ]; then
         ISSUE_KEY="NO-ISSUE"
     else
         exit 0
     fi
 fi
 
-echo "$ISSUE_KEY: $COMMIT_MSG" >"$COMMIT_MSG_FILE"
+# Remove existing key from the first line of the message to prevent duplication
+# We apply the substitution only to the first line (1s)
+CLEAN_MSG=$(echo "$COMMIT_MSG" | sed -E "1s/^(NO-ISSUE|($PROJECT_KEYS_REGEX)-[0-9]+): //")
+
+echo "$ISSUE_KEY: $CLEAN_MSG" >"$COMMIT_MSG_FILE"
