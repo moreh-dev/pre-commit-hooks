@@ -1,4 +1,4 @@
-## pre-commit-config
+## pre-commit-hooks
 
 ### Setup
 
