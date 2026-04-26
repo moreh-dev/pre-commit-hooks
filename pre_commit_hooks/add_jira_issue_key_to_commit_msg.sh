@@ -41,7 +41,25 @@ while true; do
     esac
 done
 
-BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "unknown")
+get_branch_name() {
+    if BRANCH_NAME=$(git symbolic-ref --quiet --short HEAD 2>/dev/null); then
+        echo "$BRANCH_NAME"
+        return
+    fi
+
+    for REBASE_HEAD_NAME in \
+        "$(git rev-parse --git-path rebase-merge/head-name)" \
+        "$(git rev-parse --git-path rebase-apply/head-name)"; do
+        if [ -f "$REBASE_HEAD_NAME" ]; then
+            sed 's#^refs/heads/##' "$REBASE_HEAD_NAME"
+            return
+        fi
+    done
+
+    echo "unknown"
+}
+
+BRANCH_NAME=$(get_branch_name)
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
 for PROJECT_KEY in $PROJECT_KEYS; do
