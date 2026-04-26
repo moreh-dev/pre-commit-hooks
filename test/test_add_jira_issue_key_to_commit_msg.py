@@ -106,3 +106,51 @@ def test_jira_hook(git_repo, branch, original_msg, expected_msg):
 
     final_msg = msg_file.read_text().strip()
     assert final_msg == expected_msg.strip(), f"Stderr: {result.stderr}"
+
+
+def test_jira_hook_uses_rebase_branch_name_when_head_is_detached(git_repo):
+    subprocess.run(
+        ["git", "checkout", "-b", "MAF-1234-feature"],
+        cwd=git_repo,
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    subprocess.run(
+        ["git", "checkout", "--detach"],
+        cwd=git_repo,
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    git_dir = subprocess.run(
+        ["git", "rev-parse", "--git-dir"],
+        cwd=git_repo,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+    ).stdout.strip()
+    rebase_merge_dir = git_repo / git_dir / "rebase-merge"
+    rebase_merge_dir.mkdir(parents=True)
+    (rebase_merge_dir / "head-name").write_text("refs/heads/MAF-1234-feature")
+
+    msg_file = git_repo / "COMMIT_EDITMSG"
+    msg_file.write_text("MAF-1234: feat: keep me")
+
+    args = [str(HOOK_SCRIPT), str(msg_file), "-k", "MAF", "--enable-no-issue"]
+    result = subprocess.run(
+        args,
+        cwd=git_repo,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+    )
+
+    if result.returncode != 0:
+        pytest.fail(f"Hook failed with {result.returncode}\nStderr: {result.stderr}")
+
+    final_msg = msg_file.read_text().strip()
+    assert final_msg == "MAF-1234: feat: keep me", f"Stderr: {result.stderr}"
